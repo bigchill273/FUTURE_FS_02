@@ -123,24 +123,15 @@ A full-stack **Client Lead Management System (Mini CRM)** built with React, Type
 npm install
 ```
 
-### 2. Environment Configuration (Optional)
-The application runs out of the box in development. For production deployments, configure a persistent `SESSION_SECRET` environment variable (at least 16 characters) so session tokens remain valid across server restarts:
-
-```env
-PORT=3000
-SESSION_SECRET=replace-with-a-long-random-secret
-```
-
-### 3. Run in Development
+### 2. Run in Development
 Starts the Express API server with Vite HMR/middleware on `http://localhost:3000`:
 ```bash
 npm run dev
 ```
 
-### 4. Build & Run in Production
+### 3. Build & Run in Production
 ```bash
 npm run build
-NODE_ENV=production npm start
 ```
 
 ---
