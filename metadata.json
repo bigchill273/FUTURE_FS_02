@@ -1,0 +1,6 @@
+{
+  "name": "LeadLedger CRM",
+  "description": "Client lead management mini CRM with authentication, pipeline stages, contacts, follow-up tasks, notes, and analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
