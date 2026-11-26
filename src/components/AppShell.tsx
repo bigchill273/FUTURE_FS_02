@@ -1,5 +1,8 @@
+'use client';
+
 import React, { useState } from 'react';
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   CheckSquare,
   ExternalLink,
@@ -36,25 +39,25 @@ export function AppShell({
   children,
 }: AppShellProps) {
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
+  const pathname = usePathname();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const handleLogout = async () => {
     await logout();
-    navigate('/login');
+    router.push('/login');
   };
 
   const sidebarContent = (
     <div className="flex flex-col h-full bg-white border-r border-slate-200">
       <div className="h-16 px-5 flex items-center justify-between border-b border-slate-200">
-        <NavLink
-          to="/dashboard"
+        <Link
+          href="/dashboard"
           className="font-display text-lg font-bold tracking-tight text-slate-900 whitespace-nowrap shrink-0"
           onClick={() => setMobileNavOpen(false)}
         >
           LeadLedger
-        </NavLink>
+        </Link>
         <button
           type="button"
           onClick={() => setMobileNavOpen(false)}
@@ -74,11 +77,11 @@ export function AppShell({
       <nav aria-label="Primary navigation" className="flex-1 px-3 py-4 space-y-1">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
-          const active = location.pathname === item.to;
+          const active = pathname === item.to;
           return (
-            <NavLink
+            <Link
               key={item.to}
-              to={item.to}
+              href={item.to}
               onClick={() => setMobileNavOpen(false)}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
                 active
@@ -88,19 +91,19 @@ export function AppShell({
             >
               <Icon className="w-4 h-4 shrink-0" aria-hidden="true" />
               <span>{item.label}</span>
-            </NavLink>
+            </Link>
           );
         })}
 
         <div className="pt-4 mt-4 border-t border-slate-200">
-          <NavLink
-            to={user ? `/inquiry?w=${encodeURIComponent(user.id)}` : '/inquiry'}
+          <Link
+            href={user ? `/inquiry?w=${encodeURIComponent(user.id)}` : '/inquiry'}
             onClick={() => setMobileNavOpen(false)}
             className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors whitespace-nowrap"
           >
             <span>Public Contact Form</span>
             <ExternalLink className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-          </NavLink>
+          </Link>
         </div>
       </nav>
 

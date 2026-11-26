@@ -1,23 +1,31 @@
-import React, { useState } from 'react';
-import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowRight, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export function LoginPage() {
   const { user, login, loginDemo } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const requestedPath = searchParams.get('next');
   const from =
-    (location.state as { from?: string } | null)?.from || '/dashboard';
+    requestedPath?.startsWith('/') && !requestedPath.startsWith('//')
+      ? requestedPath
+      : '/dashboard';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  if (user) {
-    return <Navigate to={from} replace />;
-  }
+  useEffect(() => {
+    if (user) router.replace(from);
+  }, [from, router, user]);
+
+  if (user) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +33,7 @@ export function LoginPage() {
     setSubmitting(true);
     try {
       await login({ email: email.trim(), password });
-      navigate(from, { replace: true });
+      router.replace(from);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to sign in.');
     } finally {
@@ -38,7 +46,7 @@ export function LoginPage() {
     setSubmitting(true);
     try {
       await loginDemo();
-      navigate(from, { replace: true });
+      router.replace(from);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'Unable to launch demo workspace.'
@@ -52,20 +60,20 @@ export function LoginPage() {
     <div className="min-h-screen bg-slate-50 flex flex-col justify-between">
       <header className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between gap-8">
         <Link
-          to="/login"
+          href="/login"
           className="font-display text-lg font-bold tracking-tight text-slate-900 whitespace-nowrap shrink-0"
         >
           LeadLedger
         </Link>
         <nav className="flex items-center gap-6 text-sm font-medium text-slate-600">
           <Link
-            to="/inquiry"
+            href="/inquiry"
             className="hover:text-slate-900 transition-colors whitespace-nowrap shrink-0"
           >
             Client Inquiry Form
           </Link>
           <Link
-            to="/register"
+            href="/register"
             className="hover:text-slate-900 transition-colors whitespace-nowrap shrink-0"
           >
             Create Account
@@ -178,14 +186,14 @@ export function LoginPage() {
               <span>
                 Need an account?{' '}
                 <Link
-                  to="/register"
+                  href="/register"
                   className="font-medium text-blue-700 hover:underline"
                 >
                   Create workspace account
                 </Link>
               </span>
               <Link
-                to="/inquiry"
+                href="/inquiry"
                 className="font-medium text-slate-700 hover:text-slate-900 hover:underline"
               >
                 Open Public Contact Form

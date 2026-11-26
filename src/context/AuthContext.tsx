@@ -33,6 +33,21 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+async function readJsonResponse<T>(res: Response): Promise<T> {
+  const contentType = res.headers.get('content-type') || '';
+  if (!contentType.includes('json')) {
+    throw new Error(
+      'The API returned a non-JSON response. Run `npm run preview` to start the built app with its API server.'
+    );
+  }
+
+  try {
+    return (await res.json()) as T;
+  } catch {
+    throw new Error('The API returned an empty or invalid JSON response.');
+  }
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -52,11 +67,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
           return;
         }
-        const data = (await res.json()) as {
+        const data = await readJsonResponse<{
           authenticated?: boolean;
           user: User | null;
           token: string | null;
-        };
+        }>(res);
         if (active) {
           if (data.authenticated && data.user && data.token) {
             setUser(data.user);
@@ -93,7 +108,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       credentials: 'same-origin',
       body: JSON.stringify(payload),
     });
-    const data = await res.json();
+    const data = await readJsonResponse<{
+      user: User;
+      token: string;
+      error?: string;
+    }>(res);
     if (!res.ok) {
       throw new Error(data.error || 'Unable to sign in.');
     }
@@ -111,7 +130,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       credentials: 'same-origin',
       body: JSON.stringify(payload),
     });
-    const data = await res.json();
+    const data = await readJsonResponse<{
+      user: User;
+      token: string;
+      error?: string;
+    }>(res);
     if (!res.ok) {
       throw new Error(data.error || 'Unable to create account.');
     }
@@ -128,7 +151,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
       credentials: 'same-origin',
     });
-    const data = await res.json();
+    const data = await readJsonResponse<{
+      user: User;
+      token: string;
+      error?: string;
+    }>(res);
     if (!res.ok) {
       throw new Error(data.error || 'Unable to open demo workspace.');
     }

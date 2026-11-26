@@ -1,6 +1,5 @@
 import crypto from 'node:crypto';
-import type { NextFunction, Request, Response } from 'express';
-import { getDb } from './db';
+import { getDb } from './db.ts';
 
 const EPHEMERAL_FALLBACK_SECRET = crypto.randomBytes(32).toString('hex');
 
@@ -21,11 +20,6 @@ export interface AuthUser {
   company: string;
   role: string;
   createdAt: string;
-}
-
-export interface AuthenticatedRequest extends Request {
-  user?: AuthUser;
-  authSource?: 'bearer' | 'cookie';
 }
 
 export function hashPassword(password: string): string {
@@ -129,16 +123,16 @@ function parseCookies(cookieHeader: string | undefined): Record<string, string> 
   return result;
 }
 
-function isHttpsRequest(req: Request): boolean {
-  const proto = req.headers['x-forwarded-proto'];
-  if (typeof proto === 'string' && proto.split(',')[0].trim() === 'https') {
+function isHttpsRequest(request: Request): boolean {
+  const proto = request.headers.get('x-forwarded-proto');
+  if (proto && proto.split(',')[0].trim() === 'https') {
     return true;
   }
-  return req.secure;
+  return new URL(request.url).protocol === 'https:';
 }
 
-export function setSessionCookie(req: Request, res: Response, token: string): void {
-  const https = isHttpsRequest(req);
+export function setSessionCookie(request: Request, token: string): string {
+  const https = isHttpsRequest(request);
   const attributes = [
     `${SESSION_COOKIE_NAME}=${encodeURIComponent(token)}`,
     'Path=/',
@@ -149,11 +143,11 @@ export function setSessionCookie(req: Request, res: Response, token: string): vo
   if (https) {
     attributes.push('Secure', 'Partitioned');
   }
-  res.setHeader('Set-Cookie', attributes.join('; '));
+  return attributes.join('; ');
 }
 
-export function clearSessionCookie(req: Request, res: Response): void {
-  const https = isHttpsRequest(req);
+export function clearSessionCookie(request: Request): string {
+  const https = isHttpsRequest(request);
   const attributes = [
     `${SESSION_COOKIE_NAME}=`,
     'Path=/',
@@ -164,15 +158,15 @@ export function clearSessionCookie(req: Request, res: Response): void {
   if (https) {
     attributes.push('Secure', 'Partitioned');
   }
-  res.setHeader('Set-Cookie', attributes.join('; '));
+  return attributes.join('; ');
 }
 
-export function extractAuthContext(req: Request): {
+export function extractAuthContext(request: Request): {
   user: AuthUser | null;
   token: string | null;
   source: 'bearer' | 'cookie' | null;
 } {
-  const authHeader = req.headers.authorization;
+  const authHeader = request.headers.get('authorization') ?? undefined;
   let token: string | null = null;
   let source: 'bearer' | 'cookie' | null = null;
 
@@ -180,7 +174,7 @@ export function extractAuthContext(req: Request): {
     token = authHeader.slice(7).trim();
     source = 'bearer';
   } else {
-    const cookies = parseCookies(req.headers.cookie);
+    const cookies = parseCookies(request.headers.get('cookie') ?? undefined);
     if (cookies[SESSION_COOKIE_NAME]) {
       token = cookies[SESSION_COOKIE_NAME];
       source = 'cookie';
@@ -230,15 +224,16 @@ export function extractAuthContext(req: Request): {
   };
 }
 
-function isSameOriginMutation(req: Request): boolean {
+export function isSameOriginMutation(request: Request): boolean {
   const hasCustomHeader =
-    req.headers['x-requested-with'] === 'XMLHttpRequest' ||
-    req.headers['x-requested-with'] === 'fetch';
+    request.headers.get('x-requested-with') === 'XMLHttpRequest' ||
+    request.headers.get('x-requested-with') === 'fetch';
   if (hasCustomHeader) return true;
 
-  const origin = req.headers.origin;
-  const host = req.headers['x-forwarded-host'] || req.headers.host;
-  if (typeof origin === 'string' && typeof host === 'string') {
+  const origin = request.headers.get('origin');
+  const host =
+    request.headers.get('x-forwarded-host') ?? request.headers.get('host');
+  if (origin && host) {
     try {
       const originHost = new URL(origin).host;
       return originHost === host;
@@ -247,30 +242,4 @@ function isSameOriginMutation(req: Request): boolean {
     }
   }
   return false;
-}
-
-export function requireAuth(
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
-): void {
-  const { user, source } = extractAuthContext(req);
-  if (!user || !source) {
-    res.status(401).json({ error: 'Authentication required' });
-    return;
-  }
-
-  const method = req.method.toUpperCase();
-  if (
-    source === 'cookie' &&
-    ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method) &&
-    !isSameOriginMutation(req)
-  ) {
-    res.status(403).json({ error: 'Invalid request origin' });
-    return;
-  }
-
-  req.user = user;
-  req.authSource = source;
-  next();
 }

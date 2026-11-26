@@ -1,6 +1,6 @@
 # LeadLedger CRM — Client Lead Management System
 
-A full-stack **Client Lead Management System (Mini CRM)** built with React, TypeScript, Tailwind CSS, Node.js, Express, and SQLite. Designed for agencies, freelancers, and startups to capture incoming website inquiries, track lead progression across sales pipeline stages, manage client contacts, log follow-up notes and tasks, and monitor conversion analytics inside an authenticated workspace.
+A full-stack **Client Lead Management System (Mini CRM)** built with Next.js, React, TypeScript, Tailwind CSS, Node.js, and SQLite. Designed for agencies, freelancers, and startups to capture incoming website inquiries, track lead progression across sales pipeline stages, manage client contacts, log follow-up notes and tasks, and monitor conversion analytics inside an authenticated workspace.
 
 ---
 
@@ -64,8 +64,8 @@ A full-stack **Client Lead Management System (Mini CRM)** built with React, Type
 
 ## Tech Stack
 
-- **Frontend**: React 19, TypeScript, React Router (`react-router-dom`), Tailwind CSS v4, Lucide Icons
-- **Backend**: Node.js (v22+), Express (`server.ts`), Vite middleware in development
+- **Frontend**: Next.js App Router, React 19, TypeScript, Tailwind CSS v4, Lucide Icons
+- **Backend**: Next.js App Router Route Handler running on the Node.js runtime
 - **Database**: SQLite via Node.js built-in `node:sqlite` (`DatabaseSync`) stored in `data/crm.db`
 - **Testing**: Node built-in test runner (`node:test`) with `tsx`
 
@@ -74,13 +74,17 @@ A full-stack **Client Lead Management System (Mini CRM)** built with React, Type
 ## Project Structure
 
 ```text
-├── server.ts                  # Express server, API routes, and Vite/static serving
 ├── server/
-│   ├── auth.ts                # Scrypt password hashing, HMAC tokens, cookies, auth middleware
+│   ├── api.ts                 # API endpoint logic used by the Route Handler
+│   ├── auth.ts                # Scrypt password hashing, HMAC tokens, and cookie helpers
 │   └── db.ts                  # SQLite schema initialization and workspace sample seeding
+├── app/
+│   ├── api/[...segments]/route.ts # Native Next.js API Route Handler
+│   ├── layout.tsx             # Root layout, metadata, global styles and providers
+│   ├── providers.tsx          # Client-side auth and CRM context providers
+│   └── */page.tsx             # App Router pages
 ├── src/
-│   ├── App.tsx                # Application routes and protected workspace layout
-│   ├── main.tsx               # React entry point
+│   ├── App.tsx                # Shared protected workspace layout
 │   ├── index.css              # Tailwind CSS v4 setup and typography tokens
 │   ├── types/
 │   │   └── crm.ts             # Shared TypeScript interfaces and status/source constants
@@ -97,7 +101,7 @@ A full-stack **Client Lead Management System (Mini CRM)** built with React, Type
 │   │   ├── LeadModal.tsx      # Create/edit lead dialog with validation
 │   │   ├── ContactModal.tsx   # Create/edit contact dialog
 │   │   └── StatusLabel.tsx    # Semantic status and priority labels
-│   └── pages/
+│   └── screens/
 │       ├── LoginPage.tsx      # Sign-in page + Demo Workspace launcher
 │       ├── RegisterPage.tsx   # Workspace registration page
 │       ├── PublicInquiryPage.tsx # Public website contact form
@@ -106,7 +110,7 @@ A full-stack **Client Lead Management System (Mini CRM)** built with React, Type
 │       ├── PipelinePage.tsx   # 6-stage Kanban pipeline board
 │       ├── ContactsPage.tsx   # Contacts directory and follow-up notes board
 │       └── TasksPage.tsx      # Follow-up task manager
-├── package.json
+├── package.json               # Bun package manager scripts and dependencies
 └── tsconfig.json
 ```
 
@@ -115,24 +119,26 @@ A full-stack **Client Lead Management System (Mini CRM)** built with React, Type
 ## Getting Started
 
 ### Prerequisites
-- **Node.js v22+** (required for built-in `node:sqlite` support)
-- **npm** (or `bun`)
+- **Node.js v22.5+** (Next.js and built-in `node:sqlite`)
+- **Bun v1.4.4+** (package manager)
 
 ### 1. Install Dependencies
 ```bash
-npm install
+bun install
 ```
 
 ### 2. Run in Development
-Starts the Express API server with Vite HMR/middleware on `http://localhost:3000`:
+Starts the Next.js App Router and API on `http://localhost:3000`:
 ```bash
-npm run dev
+bun run dev
 ```
 
 ### 3. Build & Run in Production
 ```bash
-npm run build
+bun run build
+bun run start
 ```
+`bun run start` runs the built Next.js application. The app uses Node.js APIs and SQLite, so it cannot be deployed as a static export.
 
 ---
 
@@ -141,12 +147,12 @@ npm run build
 ### Unit Tests
 Runs deterministic tests for lead filtering, sorting, analytics math, overdue detection, input validation, and CSV escaping:
 ```bash
-npx --yes tsx --test src/utils/crmLogic.test.ts
+bun run test
 ```
 
 ### Type Check
 ```bash
-npm run lint
+bun run lint
 ```
 
 ---

@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 
 export function RegisterPage() {
   const { user, register } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const [name, setName] = useState('');
   const [company, setCompany] = useState('');
@@ -14,9 +17,11 @@ export function RegisterPage() {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  if (user) {
-    return <Navigate to="/dashboard" replace />;
-  }
+  useEffect(() => {
+    if (user) router.replace('/dashboard');
+  }, [router, user]);
+
+  if (user) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,7 +49,7 @@ export function RegisterPage() {
         password,
         seedSample,
       });
-      navigate('/dashboard', { replace: true });
+      router.replace('/dashboard');
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'Unable to register account.'
@@ -58,20 +63,20 @@ export function RegisterPage() {
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <header className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between gap-8">
         <Link
-          to="/login"
+          href="/login"
           className="font-display text-lg font-bold tracking-tight text-slate-900 whitespace-nowrap shrink-0"
         >
           LeadLedger
         </Link>
         <nav className="flex items-center gap-6 text-sm font-medium text-slate-600">
           <Link
-            to="/inquiry"
+            href="/inquiry"
             className="hover:text-slate-900 transition-colors whitespace-nowrap shrink-0"
           >
             Client Inquiry Form
           </Link>
           <Link
-            to="/login"
+            href="/login"
             className="hover:text-slate-900 transition-colors whitespace-nowrap shrink-0"
           >
             Sign in
@@ -191,7 +196,7 @@ export function RegisterPage() {
 
           <p className="mt-6 pt-5 border-t border-slate-200 text-xs text-slate-600 text-center">
             Already have an account?{' '}
-            <Link to="/login" className="font-medium text-blue-700 hover:underline">
+            <Link href="/login" className="font-medium text-blue-700 hover:underline">
               Sign in here
             </Link>
           </p>

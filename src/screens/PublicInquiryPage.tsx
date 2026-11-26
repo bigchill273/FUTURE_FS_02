@@ -1,5 +1,8 @@
+'use client';
+
 import React, { useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCrm } from '../context/CrmContext';
@@ -7,7 +10,7 @@ import { useCrm } from '../context/CrmContext';
 export function PublicInquiryPage() {
   const { user } = useAuth();
   const { refreshAll } = useCrm();
-  const [searchParams] = useSearchParams();
+  const searchParams = useSearchParams();
   const requestedWorkspace = searchParams.get('w') || '';
 
   const [workspaceName, setWorkspaceName] = useState('Northstar Digital Studio');
@@ -119,7 +122,7 @@ export function PublicInquiryPage() {
         </span>
 
         <Link
-          to={user ? '/leads' : '/login'}
+          href={user ? '/leads' : '/login'}
           className="inline-flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-900 whitespace-nowrap shrink-0"
         >
           <ArrowLeft className="w-4 h-4" aria-hidden="true" />
@@ -153,7 +156,7 @@ export function PublicInquiryPage() {
                   Submit Another Inquiry
                 </button>
                 <Link
-                  to={user ? '/leads' : '/login'}
+                  href={user ? '/leads' : '/login'}
                   className="px-4 py-2 text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 rounded-lg"
                 >
                   {user ? 'View in Leads Table' : 'Open CRM Admin'}

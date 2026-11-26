@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { ArrowRight, CheckCircle2, Circle } from 'lucide-react';
 import { Lead } from '../types/crm';
 import { useCrm } from '../context/CrmContext';
@@ -147,7 +147,7 @@ export function DashboardPage({ onSelectLead, onNewLead }: DashboardPageProps) {
               </p>
             </div>
             <Link
-              to="/pipeline"
+              href="/pipeline"
               className="text-xs font-medium text-blue-700 hover:underline inline-flex items-center gap-1 whitespace-nowrap"
             >
               <span>Open board</span>
@@ -212,7 +212,7 @@ export function DashboardPage({ onSelectLead, onNewLead }: DashboardPageProps) {
               </p>
             </div>
             <Link
-              to="/leads"
+              href="/leads"
               className="text-xs font-medium text-blue-700 hover:underline inline-flex items-center gap-1 whitespace-nowrap"
             >
               <span>Filter leads</span>
@@ -259,7 +259,7 @@ export function DashboardPage({ onSelectLead, onNewLead }: DashboardPageProps) {
               Recent Leads
             </h2>
             <Link
-              to="/leads"
+              href="/leads"
               className="text-xs font-medium text-blue-700 hover:underline whitespace-nowrap"
             >
               View all leads
@@ -309,7 +309,7 @@ export function DashboardPage({ onSelectLead, onNewLead }: DashboardPageProps) {
               Upcoming Follow-ups
             </h2>
             <Link
-              to="/tasks"
+              href="/tasks"
               className="text-xs font-medium text-blue-700 hover:underline whitespace-nowrap"
             >
               Manage tasks
